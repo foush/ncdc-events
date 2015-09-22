@@ -40,6 +40,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       toast.show();
     });
 
+    //  var events = [];
+    //$('table').find('tr').each(function(index, tr) {
+    //    var tds = $(tr).find('td');
+    //    if (tds.length < 2) {
+    //        return;
+    //    }
+    //    var td1 = $(tds.get(0));
+    //    var td2 = $(tds.get(1));
+    //    var names = td2.find('h3').text().split(' ');
+    //    if (names.length > 2) {
+    //        console.log(index, 'irregular name', names)
+    //    }
+    //    events.push({
+    //        "title": td1.find('h3').text(),
+    //        "description": td1.find('p').text(),
+    //        "start": "2015-09-26T08:00:00",
+    //        "end": "2015-09-26T09:00:00",
+    //        "rooms": ["Room 225A", "Room 225B", "Room 2207", "Room 2203", "Room 2209"],
+    //        "presenter": {
+    //            "first": names[0],
+    //            "last": names[1],
+    //            "bio": td2.find('p').text(),
+    //            "avatar": td2.find('p img').attr('src')
+    //        }
+    //    });
+    //});
+    //  JSON.stringify(events);
+
   });
 
   // See https://github.com/Polymer/polymer/issues/1381

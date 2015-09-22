@@ -1,0 +1,46 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<script src="../../../bower_components/moment/moment.js"></script>
+<dom-module id="ncdc-schedule-slot">
+    <template>
+        <div id="container">
+            <span>[[title]]</span>
+        </div>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        'use strict';
+
+        Polymer({
+            is: "ncdc-schedule-slot",
+            extends: "td",
+            properties: {
+                room: {
+                    type: Array
+                },
+                events: {
+                    type: Object,
+                    observer: '_onEvents'
+                },
+                title: {
+                    type: String,
+                    computed: '_getTitle(room, events)'
+                }
+            },
+            _getTitle: function(room, events) {
+                for (var i = 0; i < events.length; i++) {
+                    if (events[i].rooms.indexOf(room) >= 0) {
+                        return events[i].title;
+                    }
+                }
+            },
+            _onEvents: function(newVal, oldVal) {
+                if (newVal.length < 2) {
+                    this.setAttribute('colspan', 5);
+                    this.toggleClass('banner', true);
+                }
+            }
+
+        });
+    })();
+</script>

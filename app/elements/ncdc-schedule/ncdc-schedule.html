@@ -1,18 +1,31 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <script src="../../../bower_components/moment/moment.js"></script>
-
+<link rel="import" href="ncdc-schedule-time.html">
+<link rel="import" href="ncdc-schedule-slot.html">
 <dom-module id="ncdc-schedule">
     <template>
         <style>
             :host {
                 display: block;
             }
+
         </style>
-        <ul>
-            <template is="dom-repeat" items="{{events}}" as="event" filter="_filterEvents" observe="start">
-                <li><span class="paper-font-body1">{{event.title}}</span></li>
-            </template>
-        </ul>
+        <h2>[[_date(start)]]</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <template is="dom-repeat" items="[[_rooms]]" as="room" sort="_sortRooms">
+                        <th>[[room]]</th>
+                    </template>
+                </tr>
+            </thead>
+            <tbody>
+                <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots">
+                    <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]"></tr>
+                </template>
+            </tbody>
+        </table>
     </template>
 
     <script>
@@ -24,34 +37,69 @@
                 properties: {
                     events: {
                         type: Array,
+                        observer: '_onEventsChange'
                     },
                     day: {
                         type: Date,
                         observer: '_onDayChange'
                     }
                 },
-                observers: [
-                    '_onEventsOrDayChange(events.*, day)'
-                ],
                 ready: function() {
                 },
                 _onDayChange: function(newValue, oldValue) {
-                    this._date = newValue.getTime();
+                    this._start = moment(newValue).set({hour: 0, minute: 0, second: 0}).valueOf();
+                    this._end = moment(newValue).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
                 },
-                _filterEvents: function(event) {
-                    if (typeof this._date === 'undefined') {
-                        console.log('returning true due to no day');
-                        return true;
-                    }
-                    if (!event._startDate) {
-                        event._startDate = (new Date(event.start.trim()+'.000-0400')).getTime();
-                    }
-                    console.log('made it here', event._startDate, this._date, event._startDate < this._date)
-                    return event._startDate >= this._date;
-                },
-                _onEventsOrDayChange: function() {
-                    console.log('on events or day change', arguments);
+                _onEventsChange: function(newValue, oldValue) {
+                     // scan through all events,
+                    var startMap = {};
+                    var roomMap = {};
 
+                    for (var i = 0; i < newValue.length; i++) {
+                        var event = newValue[i];
+                        var start = (new Date(event.start.trim()+'.000-0400')).getTime();
+                        if (start < this._start) {
+                            continue;
+                        }
+                        var end = (new Date(event.end.trim()+'.000-0400')).getTime();
+                        if (end > this._end) {
+                            continue;
+                        }
+                        for (var j = 0; j < event.rooms.length; j++) {
+                            roomMap[event.rooms[j]] = true;
+                        }
+                        if (!startMap[start]) {
+                            startMap[start] = {start: start, end: end, events: []}
+                        }
+                        startMap[start].events.push(event);
+                    }
+                    this.set('_rooms', this._each(roomMap, function(key, val) {
+                        return key;
+                    }).sort(this._sortRooms));
+                    this.set('_slots', this._each(startMap, function(key, slot) {
+                        return slot;
+                    }));
+                },
+                _each: function(obj, callback) {
+                    var result = [];
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key)) {
+                            result.push(callback(key, obj[key]));
+                        }
+                    }
+                    return result;
+                },
+                _sortSlots: function(slot1, slot2) {
+                    return slot1.start - slot2.start;
+                },
+                _sortEvents: function(event1, event2) {
+                    return this._sortRooms(event1.rooms[0], event2.rooms[0]);
+                },
+                _sortRooms: function(room1, room2) {
+                    return room1 > room2 ? 1 : -1;
+                },
+                _date: function(ts) {
+                    return moment(new Date(ts)).format('dddd, MMMM Do YYYY')
                 }
             });
         })();

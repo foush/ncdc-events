@@ -1,0 +1,49 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<script src="../../../bower_components/moment/moment.js"></script>
+<dom-module id="ncdc-schedule-time">
+    <style>
+        td.banner {
+            text-align:center;
+            font-weight: bolder;
+        }
+    </style>
+    <template>
+            <td style="min-width:150px;"><span>[[_timeRange(slot.start, slot.end)]]</span></td>
+            <template is="dom-repeat" items="{{rooms}}" as="room">
+                <template is="dom-if" if="[[_multipleEvents(slot.events, index)]]">
+                    <td is="ncdc-schedule-slot" room="[[room]]" events="[[slot.events]]"></td>
+                </template>
+            </template>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        'use strict';
+
+        Polymer({
+            is: "ncdc-schedule-time",
+            extends: "tr",
+            properties: {
+                rooms: {
+                    type: Array
+                },
+                slot: {
+                    type: Object
+                },
+                roomMap: {
+
+                }
+            },
+            _timeRange: function(start, end) {
+                return moment(start).format('h:mma')+'-'+moment(end).format('h:mma');
+            },
+            _multipleEvents: function(events, index) {
+                if (events.length < 2 && index > 0) {
+                    return false;
+                }
+                return true;
+            }
+
+        });
+    })();
+</script>
