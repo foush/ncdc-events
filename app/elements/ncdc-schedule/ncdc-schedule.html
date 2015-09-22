@@ -1,0 +1,60 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<script src="../../../bower_components/moment/moment.js"></script>
+
+<dom-module id="ncdc-schedule">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+        <ul>
+            <template is="dom-repeat" items="{{events}}" as="event" filter="_filterEvents" observe="start">
+                <li><span class="paper-font-body1">{{event.title}}</span></li>
+            </template>
+        </ul>
+    </template>
+
+    <script>
+        (function () {
+            'use strict';
+
+            Polymer({
+                is: 'ncdc-schedule',
+                properties: {
+                    events: {
+                        type: Array,
+                    },
+                    day: {
+                        type: Date,
+                        observer: '_onDayChange'
+                    }
+                },
+                observers: [
+                    '_onEventsOrDayChange(events.*, day)'
+                ],
+                ready: function() {
+                },
+                _onDayChange: function(newValue, oldValue) {
+                    this._date = newValue.getTime();
+                },
+                _filterEvents: function(event) {
+                    if (typeof this._date === 'undefined') {
+                        console.log('returning true due to no day');
+                        return true;
+                    }
+                    if (!event._startDate) {
+                        event._startDate = (new Date(event.start.trim()+'.000-0400')).getTime();
+                    }
+                    console.log('made it here', event._startDate, this._date, event._startDate < this._date)
+                    return event._startDate >= this._date;
+                },
+                _onEventsOrDayChange: function() {
+                    console.log('on events or day change', arguments);
+
+                }
+            });
+        })();
+    </script>
+
+</dom-module>

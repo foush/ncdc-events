@@ -22,22 +22,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       next();
     }
 
+    page('/', '/day/1');
+
     // Routes
-    page('/', scrollToTop, function() {
-      app.route = 'home';
-    });
-
-    page('/users', scrollToTop, function() {
-      app.route = 'users';
-    });
-
-    page('/users/:name', scrollToTop, function(data) {
-      app.route = 'user-info';
-      app.params = data.params;
-    });
-
-    page('/contact', scrollToTop, function() {
-      app.route = 'contact';
+    page('/day/:day', scrollToTop, function(ctx, next) {
+      var day = ctx.params.day;
+      if (day > 2 || day < 1) {
+        day = 1;
+      }
+      app.route = 'day-'+day;
     });
 
     // add #! before urls
