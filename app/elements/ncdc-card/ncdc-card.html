@@ -146,7 +146,6 @@
                 NCDCPreferenceBehavior
             ],
             _onSession: function(newSession, oldSession) {
-                console.log('new session', newSession, arguments);
                 if (newSession.presenter) {
                     this.$.avatar.hidden = false;
                     this.$.avatar.src = newSession.presenter.avatar;

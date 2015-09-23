@@ -1,0 +1,41 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="ncdc-app">
+    <template>
+        <content></content>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        'use strict';
+
+        Polymer({
+            is: "ncdc-app",
+            properties: {
+
+            },
+            behaviors: [
+                NCDCPreferenceBehavior
+            ],
+            observers: [
+                '_onPreferenceChanged(userPreferences.*)'
+            ],
+            _storageKey: 'ncdcPrefs',
+            load: function() {
+                var prefs = localStorage.getItem(this._storageKey)
+                if (typeof prefs !== 'undefined' && prefs) {
+                    try {
+                        prefs = JSON.parse(prefs);
+                    } catch (e) {
+                        console.error('Something went wrong decoding your preferences');
+                    }
+                }
+                return prefs || {};
+            },
+            _onPreferenceChanged: function(event) {
+                localStorage.setItem(this._storageKey, JSON.stringify(event.base));
+            }
+
+        });
+    })();
+</script>

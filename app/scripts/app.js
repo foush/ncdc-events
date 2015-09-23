@@ -21,6 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       document.querySelector('#caching-complete').show();
     }
   };
+    app.addEventListener('on-user-preferences-changed', function() {
+        console.log('user preferences were changed', arguments);
+    });
 
   // Listen for template bound event to know when bindings
   // have resolved and content has been stamped to the page
@@ -69,12 +72,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     //});
     //  JSON.stringify(events);
 
-      app.set('preferences', {});
+      app.set('preferences', document.getElementById('ncdc-app').load());
   });
 
   // See https://github.com/Polymer/polymer/issues/1381
   window.addEventListener('WebComponentsReady', function() {
     // imports are loaded and elements have been registered
+
   });
 
   // Main area's paper-scroll-header-panel custom condensing transformation of
@@ -105,6 +109,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     document.getElementById('session_detail').set('session', ev.detail.data);
       page('/sessions/'+ev.detail.data.id);
   });
+
 
 
   // Close drawer after menu item is selected if drawerPanel is narrow
