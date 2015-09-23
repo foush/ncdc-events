@@ -25,20 +25,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   // Listen for template bound event to know when bindings
   // have resolved and content has been stamped to the page
   app.addEventListener('dom-change', function() {
-    var eventAjax = document.getElementById('event_ajax');
-    eventAjax.addEventListener('response', function(ev) {
-      if (ev.detail && ev.detail.response) {
-        app.set('sessions', ev.detail.response.events);
-        var toast = document.getElementById('page_toast');
-        toast.text = 'Sessions loaded!';
-        toast.show();
-      }
-    });
-    eventAjax.addEventListener('error', function() {
-      var toast = document.getElementById('page_toast');
-      toast.text = 'Unable to load events at this time. Please try again in a few minutes.';
-      toast.show();
-    });
+      var eventAjax = document.getElementById('event_ajax');
+      eventAjax.addEventListener('response', function(ev) {
+          if (ev.detail && ev.detail.response) {
+              app.set('sessions', ev.detail.response.events);
+              var toast = document.getElementById('page_toast');
+              toast.text = 'Sessions loaded!';
+              toast.show();
+          }
+      });
+      eventAjax.addEventListener('error', function() {
+          var toast = document.getElementById('page_toast');
+          toast.text = 'Unable to load events at this time. Please try again in a few minutes.';
+          toast.show();
+      });
+
 
     //  var events = [];
     //$('table').find('tr').each(function(index, tr) {
@@ -68,6 +69,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     //});
     //  JSON.stringify(events);
 
+      app.set('preferences', {});
   });
 
   // See https://github.com/Polymer/polymer/issues/1381
@@ -117,5 +119,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   app.scrollPageToTop = function() {
     document.getElementById('mainContainer').scrollTop = 0;
   };
+
 
 })(document);

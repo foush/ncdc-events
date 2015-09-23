@@ -10,9 +10,13 @@
         :host {
             display: block;
         }
+        #card {
+            margin: 10px;
+            padding: 10px;
+        }
     </style>
     <template>
-        <paper-material elevation="1">
+        <paper-material id="card" elevation="0">
             <h2>[[heading]]</h2>
             <content></content>
         </paper-material>

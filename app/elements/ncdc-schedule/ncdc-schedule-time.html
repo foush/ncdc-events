@@ -1,5 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <script src="../../../bower_components/moment/moment.js"></script>
+<link rel="import" href="../ncdc-preference/ncdc-preference-behavior.html">
 <dom-module id="ncdc-schedule-time">
     <style>
         td.banner {
@@ -11,7 +12,7 @@
             <td style="min-width:150px;"><span>[[_timeRange(slot.start, slot.end)]]</span></td>
             <template is="dom-repeat" items="{{rooms}}" as="room">
                 <template is="dom-if" if="[[_multipleSessions(slot.sessions, index)]]">
-                    <td is="ncdc-schedule-slot" room="[[room]]" sessions="[[slot.sessions]]"></td>
+                    <td is="ncdc-schedule-slot" room="[[room]]" sessions="[[slot.sessions]]" user-preferences="{{userPreferences}}"></td>
                 </template>
             </template>
     </template>
@@ -31,6 +32,7 @@
                     type: Object
                 }
             },
+            behaviors: [NCDCPreferenceBehavior],
             _timeRange: function(start, end) {
                 return moment(start).format('h:mma')+'-'+moment(end).format('h:mma');
             },

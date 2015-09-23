@@ -1,0 +1,19 @@
+<script>
+    NCDCPreferenceBehavior = {
+        properties: {
+            userPreferences: {
+                type: Object,
+                notify: true
+            }
+        },
+        _isFavorited: function(session, preferenceChange) {
+            return (session && session.id && this.userPreferences[session.id]) ? true : false;
+        },
+        _toggleFavorite: function(session) {
+            if (session && session.id) {
+                this.set('userPreferences.'+session.id, !this.userPreferences[session.id]);
+            }
+        }
+
+    }
+</script>

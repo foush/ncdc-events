@@ -1,5 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <script src="../../../bower_components/moment/moment.js"></script>
+<link rel="import" href="../ncdc-preference/ncdc-preference-behavior.html">
 
 <link rel="import" href="ncdc-schedule-time.html">
 <link rel="import" href="ncdc-schedule-slot.html">
@@ -23,7 +24,7 @@
             </thead>
             <tbody>
                 <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots" id="rows">
-                    <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]"></tr>
+                    <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]" user-preferences="{{userPreferences}}"></tr>
                 </template>
             </tbody>
         </table>
@@ -48,9 +49,8 @@
                         observer: '_onDayChange'
                     }
                 },
+                behaviors: [NCDCPreferenceBehavior],
 
-                ready: function() {
-                },
                 _onDayChange: function(newValue, oldValue) {
                     this._start = moment(newValue).set({hour: 0, minute: 0, second: 0}).valueOf();
                     this._end = moment(newValue).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
