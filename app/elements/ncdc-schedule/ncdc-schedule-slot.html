@@ -2,8 +2,8 @@
 <script src="../../../bower_components/moment/moment.js"></script>
 <dom-module id="ncdc-schedule-slot">
     <template>
-        <div id="container">
-            <span>[[title]]</span>
+        <div>
+            <span id="title">[[session.title]]</span>
         </div>
     </template>
 </dom-module>
@@ -18,27 +18,39 @@
                 room: {
                     type: Array
                 },
-                events: {
+                sessions: {
                     type: Object,
-                    observer: '_onEvents'
+                    observer: '_onSessions'
                 },
-                title: {
-                    type: String,
-                    computed: '_getTitle(room, events)'
+                session: {
+                    type: Object,
+                    computed: '_getSession(room, sessions)'
                 }
             },
-            _getTitle: function(room, events) {
-                for (var i = 0; i < events.length; i++) {
-                    if (events[i].rooms.indexOf(room) >= 0) {
-                        return events[i].title;
+            listeners: {
+                'click': '_onClick'
+            },
+            _getSession: function(room, sessions) {
+                for (var i = 0; i < sessions.length; i++) {
+                    if (sessions[i].rooms.indexOf(room) >= 0) {
+                        return sessions[i];
                     }
                 }
+                return null;
             },
-            _onEvents: function(newVal, oldVal) {
+            _onSessions: function(newVal, oldVal) {
                 if (newVal.length < 2) {
                     this.setAttribute('colspan', 5);
                     this.toggleClass('banner', true);
                 }
+            },
+            _onClick: function(ev) {
+                this.fire('session-select', {
+                    session: this.session,
+                    title: this.$.title,
+                    element: this,
+                    coords: {x: event.x, y: event.y}
+                });
             }
 
         });

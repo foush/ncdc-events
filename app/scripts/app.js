@@ -28,9 +28,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var eventAjax = document.getElementById('event_ajax');
     eventAjax.addEventListener('response', function(ev) {
       if (ev.detail && ev.detail.response) {
-        app.set('events', ev.detail.response.events);
+        app.set('sessions', ev.detail.response.events);
         var toast = document.getElementById('page_toast');
-        toast.text = 'Events loaded!';
+        toast.text = 'Sessions loaded!';
         toast.show();
       }
     });
@@ -99,6 +99,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // Scale middleContainer appName
     Polymer.Base.transform('scale(' + scaleMiddle + ') translateZ(0)', appName);
   });
+  document.addEventListener('tile-click', function(ev) {
+    document.getElementById('session_detail').set('session', ev.detail.data);
+      page('/sessions/'+ev.detail.data.id);
+  });
+
 
   // Close drawer after menu item is selected if drawerPanel is narrow
   app.onDataRouteClick = function() {

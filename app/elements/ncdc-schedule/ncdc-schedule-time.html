@@ -10,8 +10,8 @@
     <template>
             <td style="min-width:150px;"><span>[[_timeRange(slot.start, slot.end)]]</span></td>
             <template is="dom-repeat" items="{{rooms}}" as="room">
-                <template is="dom-if" if="[[_multipleEvents(slot.events, index)]]">
-                    <td is="ncdc-schedule-slot" room="[[room]]" events="[[slot.events]]"></td>
+                <template is="dom-if" if="[[_multipleSessions(slot.sessions, index)]]">
+                    <td is="ncdc-schedule-slot" room="[[room]]" sessions="[[slot.sessions]]"></td>
                 </template>
             </template>
     </template>
@@ -29,16 +29,13 @@
                 },
                 slot: {
                     type: Object
-                },
-                roomMap: {
-
                 }
             },
             _timeRange: function(start, end) {
                 return moment(start).format('h:mma')+'-'+moment(end).format('h:mma');
             },
-            _multipleEvents: function(events, index) {
-                if (events.length < 2 && index > 0) {
+            _multipleSessions: function(sessions, index) {
+                if (sessions.length < 2 && index > 0) {
                     return false;
                 }
                 return true;

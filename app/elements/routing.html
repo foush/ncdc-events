@@ -33,6 +33,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       app.route = 'day-'+day;
     });
 
+    page('/sessions/:id', scrollToTop, function(ctx, next) {
+      if (!document.getElementById('session_detail').session) {
+        page('/');
+        return;
+      }
+        app.route = 'detail';
+    });
+
     // add #! before urls
     page({
       hashbang: true

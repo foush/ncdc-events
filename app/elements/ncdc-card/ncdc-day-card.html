@@ -1,0 +1,73 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/hero-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+
+<dom-module id="ncdc-day-card">
+    <style>
+        :host {
+            display: block;
+        }
+    </style>
+    <template>
+        <paper-material elevation="1">
+            <h2>[[heading]]</h2>
+            <content></content>
+        </paper-material>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        'use strict';
+
+        Polymer({
+            is: "ncdc-day-card",
+            properties: {
+                heading: {
+                    type: String
+                },
+                animationConfig: {
+                    type: Object,
+                    value: function() {
+                        return {
+                            'entry': {
+                                name: 'fade-in-animation',
+                                node: this,
+                            },
+                            'exit': [{
+                                name: 'hero-animation',
+                                id: 'hero',
+                                fromPage: this
+                            },{
+                                name: 'fade-out-animation',
+                                node: this
+                            }]
+                        }
+                    }
+                }
+
+            },
+            behaviors: [
+                Polymer.NeonSharedElementAnimatableBehavior
+            ],
+            listeners: {
+                'session-select': '_onSessionSelect'
+            },
+            _onSessionSelect: function(event) {
+                var detail = event.detail;
+                // configure the page animation
+                this.sharedElements = {
+                    'hero': detail.title
+                };
+
+                this.fire('tile-click', {
+                    tile: detail.element,
+                    data: detail.session
+                });
+            }
+
+        });
+    })();
+</script>

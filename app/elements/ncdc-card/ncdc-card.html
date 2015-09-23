@@ -1,0 +1,108 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/hero-animation.html">
+<link rel="import" href="../../../bower_components/neon-animation/animations/slide-right-animation.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<script src="../../../bower_components/moment/moment.js"></script>
+
+<dom-module id="ncdc-card">
+    <style>
+        :host {
+            display: block;
+        }
+
+        .fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+        #avatar {
+            float:left;
+            margin-right:20px;
+            margin-bottom:20px;
+        }
+    </style>
+    <template>
+        <div id="fixed" class="red-100"></div>
+        <paper-material elevation="1" id="card">
+            <h2 id="heading">[[session.title]]</h2>
+            <div><strong>[[_day(session.start)]]</strong> <span>[[_time(session.start)]]</span>-<span>[[_time(session.end)]]</span></div>
+            <iron-image id="avatar" preload fade placeholder="data:image/gif;base64,R0lGODdhyADIAOMAAO7u/5aWlqGho9jY5OPj8cLCyqyssLe3vc3N1wAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAyADIAAAE/hDISau9OOvNu/9gKI5kaZ5oqq5s675wLM90bd94ru987//AoHBILBqPyKRyyWw6n9CodEqtWq/YrHbL7Xq/4LB4TC6bz+i0es1uu9/wuHxOr9vv+Lx+z+/7/4CBgoOEhYaHiImKi4yNjo+QkZKTlJWWl5iZmpucnZ6foKGio6SlpqeoqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMXGx8jJysvMzc7P0NHS06kB1tYqA9cUBQEFrgLWAgIqBOEBFNuu1gMs2ugT3d/rAe0r77bsFwMGAQLzEggc8AcQAIJwA+EBuKbQmgF+3iocDHBAXiZ9Fd6dAxhuo4R3/gwnGDgnkqE1BBM0XrN3CSOFgQYM+ouHEsFMAP1i2lQIAN8EhwS6kZPQ74BMnpZcTgiHkoA1AhKxAWDaU+pHqwvrVVVI1ScmpRIwYjxwTqo+r1vTafV6FmtSrRXEak0ooB+8tjzR4v251m0llwSgUnUaAOrJtFMDoESrty9XxYi/wk0sMEBMoRKo7iRK8SiFxu285vQMoIDR0qdNN+rmbxxJlRFLi7u22OG1mDjP4bYb2uFVf+r0CZ+cyOS1oRD/cUM4cN5EA3bDhszqWOHEhBLIZh+qHdnmaFABwIwm9BxLZxAtn6fGvr379/Djy59Pv779+/jz69/Pv7///wAGQyjggAQWaOCBCCao4IIMNujggxBGKOGEFFZo4YUYZqjhhhx26OGHIIYo4ogklmjiiSimqOKKLLbo4oswxijjjDRKEQEAOw=="></iron-image>
+            <div>
+                <p>[[session.description]]</p>
+            </div>
+            <div style="clear:both">
+                <span>[[_where(session.rooms)]]</span>
+            </div>
+
+        </paper-material>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        'use strict';
+
+        Polymer({
+            is: "ncdc-card",
+            properties: {
+                session: {
+                    type: Object,
+                    observer: '_onSession'
+                },
+                sharedElements: {
+                    type: Object,
+                    value: function() {
+                        return {
+                            'hero': this.$.heading
+                        }
+                    }
+                },
+                animationConfig: {
+                    type: Object,
+                    value: function() {
+                        return {
+                            'entry': {
+                                name: 'hero-animation',
+                                id: 'hero',
+                                toPage: this,
+                                timing: {
+                                    delay: 150
+                                }
+                            },
+                            'exit': {
+                                name: 'slide-right-animation',
+                                node: this
+                            }
+                        }
+                    }
+                }
+
+            },
+            behaviors: [
+                Polymer.NeonSharedElementAnimatableBehavior
+            ],
+            _onSession: function(newSession, oldSession) {
+                console.log('new session', newSession, arguments);
+                if (newSession.presenter) {
+                    this.$.avatar.src = newSession.presenter.avatar;
+                }
+
+            },
+            _day: function(date) {
+                return date ? moment(date).format('dddd, MMMM Do YYYY') : 'Unknown';
+            },
+            _time: function(date) {
+                return date ? moment(date).format('h:mma') : '?';
+            },
+            _where: function(rooms) {
+                if (rooms.length > 1) {
+                    return 'All Locations';
+                }
+                return rooms.length ? rooms[0] : 'Unknown';
+            }
+        });
+    })();
+</script>

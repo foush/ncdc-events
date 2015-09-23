@@ -1,15 +1,16 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <script src="../../../bower_components/moment/moment.js"></script>
+
 <link rel="import" href="ncdc-schedule-time.html">
 <link rel="import" href="ncdc-schedule-slot.html">
 <dom-module id="ncdc-schedule">
-    <template>
-        <style>
-            :host {
-                display: block;
-            }
+    <style>
+        :host {
+            display: block;
+        }
 
-        </style>
+    </style>
+    <template>
         <h2>[[_date(start)]]</h2>
         <table class="table table-bordered table-striped">
             <thead>
@@ -21,7 +22,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots">
+                <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots" id="rows">
                     <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]"></tr>
                 </template>
             </tbody>
@@ -35,43 +36,47 @@
             Polymer({
                 is: 'ncdc-schedule',
                 properties: {
-                    events: {
+                    title: {
+                        type: String
+                    },
+                    sessions: {
                         type: Array,
-                        observer: '_onEventsChange'
+                        observer: '_onSessionsChange'
                     },
                     day: {
                         type: Date,
                         observer: '_onDayChange'
                     }
                 },
+
                 ready: function() {
                 },
                 _onDayChange: function(newValue, oldValue) {
                     this._start = moment(newValue).set({hour: 0, minute: 0, second: 0}).valueOf();
                     this._end = moment(newValue).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
                 },
-                _onEventsChange: function(newValue, oldValue) {
-                     // scan through all events,
+                _onSessionsChange: function(newValue, oldValue) {
+                     // scan through all sessions,
                     var startMap = {};
                     var roomMap = {};
 
                     for (var i = 0; i < newValue.length; i++) {
-                        var event = newValue[i];
-                        var start = (new Date(event.start.trim()+'.000-0400')).getTime();
+                        var session = newValue[i];
+                        var start = (new Date(session.start.trim()+'.000-0400')).getTime();
                         if (start < this._start) {
                             continue;
                         }
-                        var end = (new Date(event.end.trim()+'.000-0400')).getTime();
+                        var end = (new Date(session.end.trim()+'.000-0400')).getTime();
                         if (end > this._end) {
                             continue;
                         }
-                        for (var j = 0; j < event.rooms.length; j++) {
-                            roomMap[event.rooms[j]] = true;
+                        for (var j = 0; j < session.rooms.length; j++) {
+                            roomMap[session.rooms[j]] = true;
                         }
                         if (!startMap[start]) {
-                            startMap[start] = {start: start, end: end, events: []}
+                            startMap[start] = {start: start, end: end, sessions: []}
                         }
-                        startMap[start].events.push(event);
+                        startMap[start].sessions.push(session);
                     }
                     this.set('_rooms', this._each(roomMap, function(key, val) {
                         return key;
@@ -92,8 +97,8 @@
                 _sortSlots: function(slot1, slot2) {
                     return slot1.start - slot2.start;
                 },
-                _sortEvents: function(event1, event2) {
-                    return this._sortRooms(event1.rooms[0], event2.rooms[0]);
+                _sortSessions: function(session1, session2) {
+                    return this._sortRooms(session1.rooms[0], session2.rooms[0]);
                 },
                 _sortRooms: function(room1, room2) {
                     return room1 > room2 ? 1 : -1;
