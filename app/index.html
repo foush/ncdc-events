@@ -85,6 +85,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <span>Day 2</span>
           </a>
 
+            <a data-route="schedule" href="/schedule" on-click="onDataRouteClick">
+                <iron-icon icon="icons:list"></iron-icon>
+                <span>My Schedule</span>
+            </a>
+
         </paper-menu>
       </paper-scroll-header-panel>
 
@@ -123,6 +128,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <ncdc-schedule rooms="[[rooms]]" slots="[[slots]]" user-preferences="{{preferences}}" day="2015-09-27T00:00:00.000-0400"></ncdc-schedule>
                 </ncdc-day-card>
                 <ncdc-card data-route="detail" id="session_detail" user-preferences="{{preferences}}"></ncdc-card>
+                <ncdc-day-card heading="My Schedule" data-route="schedule">
+                    <ncdc-schedule-mine rooms="[[rooms]]" slots="[[slots]]" user-preferences="{{preferences}}"></ncdc-schedule-mine>
+                </ncdc-day-card>
             </neon-animated-pages>
           </div>
         </ncdc-app>

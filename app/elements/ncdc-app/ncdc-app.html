@@ -68,22 +68,12 @@
                     }
                     startMap[start].sessions.push(session);
                 }
-                console.log('setting value for rooms and slots');
                 this.set('rooms', this._each(roomMap, function(key, val) {
                     return key;
                 }).sort(this._sortRooms));
                 this.set('slots', this._each(startMap, function(key, slot) {
                     return slot;
                 }).sort(this._sortSlots));
-            },
-            _each: function(obj, callback) {
-                var result = [];
-                for (var key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        result.push(callback(key, obj[key]));
-                    }
-                }
-                return result;
             },
             _sortSlots: function(slot1, slot2) {
                 return slot1.start - slot2.start;

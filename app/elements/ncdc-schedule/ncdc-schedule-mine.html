@@ -1,20 +1,52 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
-<script src="../../../bower_components/moment/moment.js"></script>
 <link rel="import" href="../ncdc-preference/ncdc-preference-behavior.html">
+<link rel="import" href="../ncdc-date/ncdc-time-behavior.html">
+<link rel="import" href="../../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item-body.html">
 
 <dom-module id="ncdc-schedule-mine">
-    <style>
-        iron-icon {
-            color: var(--paper-red-900)
+    <style is="custom-style">
+        h4 {
+            margin: 12px;
+        }
+        .list {
+            display: inline-block;
+            margin: 12px;
+            @apply(--shadow-elevation-2dp);
+        }
+        paper-card {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        paper-item {
+            width:70vw;
         }
     </style>
     <template>
-        <div>
-            <span id="title">[[session.title]]</span>
-            <iron-icon icon="icons:favorite" hidden$="{{_not(favorited)}}" on-click="_unsetFavorite"></iron-icon>
-        </div>
+        <template is="dom-repeat" items="[[mySchedule]]" as="period">
+            <h1 hidden$="[[_not(period.day)]]">[[period.day]]</h1>
+            <paper-card heading="[[_periodHeading(period)]]" elevation="0">
+                <div class="card-content">
+                    <!-- show any sessions in this period -->
+                    <div class="list" hidden$="[[period.empty]]">
+                        <template is="dom-repeat" items="[[period.sessions]]" as="session">
+                            <paper-item on-click="_goToSession">
+                                <paper-item-body two-line class="layout vertical">
+                                    <div>[[session.title]]</div>
+                                    <div secondary>[[session.rooms.0]]</div>
+                                </paper-item-body>
+                            </paper-item>
+                        </template>
+                    </div>
+                    <template is="dom-if" if="[[period.empty]]">
+                        <em>Free time</em>
+                    </template>
+                </div>
+            </paper-card>
+        </template>
     </template>
 </dom-module>
 <script>
@@ -23,62 +55,78 @@
 
         Polymer({
             is: "ncdc-schedule-mine",
-            extends: "td",
             properties: {
-                room: {
+                rooms: {
                     type: Array
                 },
-                sessions: {
-                    type: Object,
-                    observer: '_onSessions'
+                slots: {
+                    type: Array
                 },
-                session: {
-                    type: Object,
-                    computed: '_getSession(room, sessions)'
-                },
-                favorited: {
-                    type: Boolean,
-                    computed: '_isFavorited(session, userPreferences.*)'
+                mySchedule: {
+                    type: Array,
+                    computed: '_calculateSchedule(slots, userPreferences.*)'
                 }
             },
-            behaviors: [NCDCPreferenceBehavior],
+            behaviors: [NCDCPreferenceBehavior, NCDCTimeBehavior],
             listeners: {
                 'click': '_onClick'
             },
-            _getSession: function(room, sessions) {
-                for (var i = 0; i < sessions.length; i++) {
-                    if (sessions[i].rooms.indexOf(room) >= 0) {
-                        return sessions[i];
+            _periodHeading: function(period) {
+                return this.formatAsTime(period.start) + '-' + this.formatAsTime(period.end);
+            },
+            _calculateSchedule: function(slots, userPrefChange) {
+                var schedule = [];
+                var prevDay = null;
+                var day = 1;
+                for (var i = 0; i < slots.length; i++) {
+                    var slot = slots[i];
+                    var period = {};
+                    var start = new Date(slot.start);
+                    if (!prevDay || !this._sameDay(prevDay, start)) {
+                        period.day = ('Day ') + day++;
                     }
+                    prevDay = start;
+                    period.start = start;
+                    period.sessions = this._getSessionsForSlot(slot);
+                    if (period.sessions.length < 1) {
+                        period.empty = true;
+                        // peek ahead at the next session until we find a slot that has another session in it.
+                        while (i + 1 < slots.length && this._sameDay(new Date(slots[i+1].start), prevDay) && this._getSessionsForSlot(this.slots[i+1]).filter(function(session) {return ['Lunch','Afternoon Break'].indexOf(session.title) < 0}).length < 1) {
+                            i++;
+                        }
+                        period.end = i + 1 < slots.length && this._sameDay(new Date(slots[i+1].start), prevDay) ? new Date(slots[i+1].start) : new Date(slots[i].end);
+                    } else {
+                        period.end = new Date(slot.end);
+                    }
+                    schedule.push(period);
                 }
-                return null;
+                return schedule;
             },
-            _onSessions: function(newVal, oldVal) {
-                if (newVal.length < 2) {
-                    this.setAttribute('colspan', 5);
-                    this.toggleClass('banner', true);
-                }
+            _sameDay: function(day1, day2) {
+                return day1.getDate() == day2.getDate();
             },
-            _onClick: function(ev) {
-                if (!this.session) {
-                    return;
-                }
-                this.fire('session-select', {
-                    session: this.session,
-                    title: this.$.title,
-                    element: this,
-                    coords: {x: event.x, y: event.y}
-                });
+
+            _getSessionsForSlot: function(slot) {
+                var self = this;
+                // get all sessions for this slot
+                return this._each(slot.sessions, function(i, session) {
+                    if (self.userPreferences[session.id] || session.rooms.length > 1) {
+                        return session;
+                    }
+                    return null;
+                }).filter(function(val) {return !!val});
             },
+
             _not: function(val) {
                 return !val;
             },
-            _unsetFavorite: function(ev) {
-                ev.preventDefault();
-                ev.cancelBubble = true;
-                this._toggleFavorite(this.session);
-                return false;
-
+            _goToSession: function(ev) {
+                this.fire('session-select', {
+                    session: ev.model.session,
+                    title: ev.srcElement,
+                    element: this,
+                    coords: {x: ev.x, y: ev.y}
+                });
             }
 
         });
