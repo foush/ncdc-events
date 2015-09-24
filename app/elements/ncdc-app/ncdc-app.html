@@ -1,5 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
+<link rel="import" href="../ncdc-date/ncdc-date-behavior.html">
+<link rel="import" href="../ncdc-preference/ncdc-preference-behavior.html">
+
 <dom-module id="ncdc-app">
     <template>
         <content></content>
@@ -12,10 +15,23 @@
         Polymer({
             is: "ncdc-app",
             properties: {
+                sessions: {
+                    type: Object,
+                    observer: '_onSessionsChanged'
+                },
+                rooms: {
+                    type: Array,
+                    notify: true
+                },
+                slots: {
+                    type: Array,
+                    notify: true
+                }
 
             },
             behaviors: [
-                NCDCPreferenceBehavior
+                NCDCPreferenceBehavior,
+                NCDCDateBehavior
             ],
             observers: [
                 '_onPreferenceChanged(userPreferences.*)'
@@ -34,6 +50,46 @@
             },
             _onPreferenceChanged: function(event) {
                 localStorage.setItem(this._storageKey, JSON.stringify(event.base));
+            },
+            _onSessionsChanged: function(newValue, oldValue) {
+                // scan through all sessions,
+                var startMap = {};
+                var roomMap = {};
+
+                for (var i = 0; i < newValue.length; i++) {
+                    var session = newValue[i];
+                    var start = (this.parseDateString(session.start.trim())).getTime();
+                    var end = (this.parseDateString(session.end.trim()+'.000-0400')).getTime();
+                    for (var j = 0; j < session.rooms.length; j++) {
+                        roomMap[session.rooms[j]] = true;
+                    }
+                    if (!startMap[start]) {
+                        startMap[start] = {start: start, end: end, sessions: []}
+                    }
+                    startMap[start].sessions.push(session);
+                }
+                console.log('setting value for rooms and slots');
+                this.set('rooms', this._each(roomMap, function(key, val) {
+                    return key;
+                }).sort(this._sortRooms));
+                this.set('slots', this._each(startMap, function(key, slot) {
+                    return slot;
+                }).sort(this._sortSlots));
+            },
+            _each: function(obj, callback) {
+                var result = [];
+                for (var key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        result.push(callback(key, obj[key]));
+                    }
+                }
+                return result;
+            },
+            _sortSlots: function(slot1, slot2) {
+                return slot1.start - slot2.start;
+            },
+            _sortRooms: function(room1, room2) {
+                return room1 > room2 ? 1 : -1;
             }
 
         });

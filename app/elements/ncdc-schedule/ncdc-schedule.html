@@ -18,50 +18,43 @@
     </style>
     <template>
         <h2>[[_date(_day)]]</h2>
-        <div class="hidden-xs">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <template is="dom-repeat" items="[[_rooms]]" as="room" sort="_sortRooms">
-                            <th>[[room]]</th>
-                        </template>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots" id="rows">
-                        <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]" user-preferences="{{userPreferences}}"></tr>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr class="hidden-xs">
+                    <th>Time</th>
+                    <template is="dom-repeat" items="[[rooms]]" as="room">
+                        <th>[[room]]</th>
                     </template>
-                </tbody>
-            </table>
-        </div>
-        <div class="visible-xs">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th colspan="3" class="text-center">
-                            <paper-icon-button icon="arrow-back" alt="arrow-back" title="arrow-back" class="pull-left" on-click="_xsRoomBack"></paper-icon-button>
-                            <span>[[xsRoom]]</span>
-                            <paper-icon-button icon="arrow-forward" alt="arrow-forward" title="arrow-forward" class="pull-right" on-click="_xsRoomForward"></paper-icon-button>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Session</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots">
-                        <tr>
-                            <td>[[formatAsTime(slot.start)]]</td>
-                            <td>[[formatAsTime(slot.end)]]</td>
-                            <td is="ncdc-schedule-slot" room="[[xsRoom]]" sessions="[[slot.sessions]]" user-preferences="{{userPreferences}}"></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                </tr>
+                <tr class="visible-xs">
+                    <th colspan="3" class="text-center">
+                        <paper-icon-button icon="arrow-back" alt="arrow-back" title="arrow-back" class="pull-left" on-click="_xsRoomBack"></paper-icon-button>
+                        <span>[[xsRoom]]</span>
+                        <paper-icon-button icon="arrow-forward" alt="arrow-forward" title="arrow-forward" class="pull-right" on-click="_xsRoomForward"></paper-icon-button>
+                    </th>
+                </tr>
+                <tr class="visible-xs">
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Session</th>
+                </tr>
+            </thead>
+            <tbody class="hidden-xs">
+                <template is="dom-repeat" items="{{slots}}" as="slot" id="rows" filter="_slotInRange">
+                    <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[rooms]]" user-preferences="{{userPreferences}}"></tr>
+                </template>
+            </tbody>
+            <tbody class="visible-xs">
+            <template is="dom-repeat" items="{{slots}}" as="slot" filter="_slotInRange">
+                <tr>
+                    <td>[[formatAsTime(slot.start)]]</td>
+                    <td>[[formatAsTime(slot.end)]]</td>
+                    <td is="ncdc-schedule-slot" room="[[xsRoom]]" sessions="[[slot.sessions]]" user-preferences="{{userPreferences}}"></td>
+                </tr>
+            </template>
+            </tbody>
+
+        </table>
     </template>
 
     <script>
@@ -74,21 +67,24 @@
                     title: {
                         type: String
                     },
-                    sessions: {
-                        type: Array,
-                        observer: '_onSessionsChange'
-                    },
                     day: {
                         type: String,
                         observer: '_onDayChange'
                     },
+                    rooms: {
+                        type: Array
+                    },
+                    slots: {
+                        type: Array
+                    },
+
                     xsRoomSelection: {
                         type: Number,
                         value: 0
                     },
                     xsRoom: {
                         type: String,
-                        computed: '_selectedRoom(_rooms, xsRoomSelection)'
+                        computed: '_selectedRoom(rooms, xsRoomSelection)'
                     }
                 },
                 behaviors: [NCDCPreferenceBehavior, NCDCDateBehavior, NCDCTimeBehavior],
@@ -98,53 +94,8 @@
                     this._start = moment(this._day).set({hour: 0, minute: 0, second: 0}).valueOf();
                     this._end = moment(this._day).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
                 },
-                _onSessionsChange: function(newValue, oldValue) {
-                     // scan through all sessions,
-                    var startMap = {};
-                    var roomMap = {};
-
-                    for (var i = 0; i < newValue.length; i++) {
-                        var session = newValue[i];
-                        var start = (this.parseDateString(session.start.trim())).getTime();
-                        if (start < this._start) {
-                            continue;
-                        }
-                        var end = (this.parseDateString(session.end.trim()+'.000-0400')).getTime();
-                        if (end > this._end) {
-                            continue;
-                        }
-                        for (var j = 0; j < session.rooms.length; j++) {
-                            roomMap[session.rooms[j]] = true;
-                        }
-                        if (!startMap[start]) {
-                            startMap[start] = {start: start, end: end, sessions: []}
-                        }
-                        startMap[start].sessions.push(session);
-                    }
-                    this.set('_rooms', this._each(roomMap, function(key, val) {
-                        return key;
-                    }).sort(this._sortRooms));
-                    this.set('_slots', this._each(startMap, function(key, slot) {
-                        return slot;
-                    }));
-                },
-                _each: function(obj, callback) {
-                    var result = [];
-                    for (var key in obj) {
-                        if (obj.hasOwnProperty(key)) {
-                            result.push(callback(key, obj[key]));
-                        }
-                    }
-                    return result;
-                },
-                _sortSlots: function(slot1, slot2) {
-                    return slot1.start - slot2.start;
-                },
-                _sortSessions: function(session1, session2) {
-                    return this._sortRooms(session1.rooms[0], session2.rooms[0]);
-                },
-                _sortRooms: function(room1, room2) {
-                    return room1 > room2 ? 1 : -1;
+                _slotInRange: function(slot) {
+                    return (slot.start >= this._start && slot.end <= this._end);
                 },
                 _date: function(ts) {
                     return moment(ts).format('dddd, MMMM Do YYYY');
@@ -153,10 +104,10 @@
                     return (rooms && index >= 0 && index < rooms.length) ? rooms[index] : '';
                 },
                 _xsRoomBack: function(ev) {
-                    this.set('xsRoomSelection', (this._rooms.length + this.xsRoomSelection - 1) % this._rooms.length)
+                    this.set('xsRoomSelection', (this.rooms.length + this.xsRoomSelection - 1) % this.rooms.length)
                 },
                 _xsRoomForward: function(ev) {
-                    this.set('xsRoomSelection', (this.xsRoomSelection + 1) % this._rooms.length)
+                    this.set('xsRoomSelection', (this.xsRoomSelection + 1) % this.rooms.length)
                 }
             });
         })();
