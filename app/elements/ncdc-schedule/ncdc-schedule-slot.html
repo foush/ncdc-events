@@ -60,6 +60,9 @@
                 }
             },
             _onClick: function(ev) {
+                if (!this.session) {
+                    return;
+                }
                 this.fire('session-select', {
                     session: this.session,
                     title: this.$.title,
