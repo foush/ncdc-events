@@ -1,5 +1,6 @@
-!/dist
+!*
 /.git
+/.gitignore
 /.idea
 /.jscsrc
 /.jshintrc
