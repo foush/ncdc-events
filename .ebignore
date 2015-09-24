@@ -1,0 +1,14 @@
+!/dist
+/.git
+/.idea
+/.jscsrc
+/.jshintrc
+/.tmp
+/app
+/bower.json
+/bower_components
+/docs
+/gulpfile.js
+/node_modules
+/package.json
+/wct.conf.json
