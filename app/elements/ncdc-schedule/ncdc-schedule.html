@@ -4,6 +4,7 @@
 
 <link rel="import" href="ncdc-schedule-time.html">
 <link rel="import" href="ncdc-schedule-slot.html">
+<link rel="import" href="../ncdc-date/ncdc-date-behavior.html">
 <dom-module id="ncdc-schedule">
     <style>
         :host {
@@ -12,7 +13,7 @@
 
     </style>
     <template>
-        <h2>[[_date(start)]]</h2>
+        <h2>[[_date(_day)]]</h2>
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -45,15 +46,16 @@
                         observer: '_onSessionsChange'
                     },
                     day: {
-                        type: Date,
+                        type: String,
                         observer: '_onDayChange'
                     }
                 },
-                behaviors: [NCDCPreferenceBehavior],
+                behaviors: [NCDCPreferenceBehavior, NCDCDateBehavior],
 
                 _onDayChange: function(newValue, oldValue) {
-                    this._start = moment(newValue).set({hour: 0, minute: 0, second: 0}).valueOf();
-                    this._end = moment(newValue).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
+                    this._day = this.parseDateString(newValue);
+                    this._start = moment(this._day).set({hour: 0, minute: 0, second: 0}).valueOf();
+                    this._end = moment(this._day).set({hour: 23, minute: 59, second: 59, millisecond: 999}).valueOf();// milliseconds
                 },
                 _onSessionsChange: function(newValue, oldValue) {
                      // scan through all sessions,
@@ -62,11 +64,11 @@
 
                     for (var i = 0; i < newValue.length; i++) {
                         var session = newValue[i];
-                        var start = (new Date(session.start.trim()+'.000-0400')).getTime();
+                        var start = (this.parseDateString(session.start.trim())).getTime();
                         if (start < this._start) {
                             continue;
                         }
-                        var end = (new Date(session.end.trim()+'.000-0400')).getTime();
+                        var end = (this.parseDateString(session.end.trim()+'.000-0400')).getTime();
                         if (end > this._end) {
                             continue;
                         }
@@ -104,7 +106,7 @@
                     return room1 > room2 ? 1 : -1;
                 },
                 _date: function(ts) {
-                    return moment(new Date(ts)).format('dddd, MMMM Do YYYY')
+                    return moment(ts).format('dddd, MMMM Do YYYY');
                 }
             });
         })();

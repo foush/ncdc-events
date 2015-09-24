@@ -3,7 +3,7 @@ dist
 bower_components
 .tmp
 /.idea/
-
+.DS_Store
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
