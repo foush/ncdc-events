@@ -1,10 +1,14 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <script src="../../../bower_components/moment/moment.js"></script>
 <link rel="import" href="../ncdc-preference/ncdc-preference-behavior.html">
-
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="ncdc-schedule-time.html">
 <link rel="import" href="ncdc-schedule-slot.html">
 <link rel="import" href="../ncdc-date/ncdc-date-behavior.html">
+<link rel="import" href="../ncdc-date/ncdc-time-behavior.html">
+<link rel="stylesheet" href="../../../bower_components/bootstrap/dist/css/bootstrap.min.css">
+
 <dom-module id="ncdc-schedule">
     <style>
         :host {
@@ -14,21 +18,50 @@
     </style>
     <template>
         <h2>[[_date(_day)]]</h2>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <template is="dom-repeat" items="[[_rooms]]" as="room" sort="_sortRooms">
-                        <th>[[room]]</th>
+        <div class="hidden-xs">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <template is="dom-repeat" items="[[_rooms]]" as="room" sort="_sortRooms">
+                            <th>[[room]]</th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots" id="rows">
+                        <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]" user-preferences="{{userPreferences}}"></tr>
                     </template>
-                </tr>
-            </thead>
-            <tbody>
-                <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots" id="rows">
-                    <tr is="ncdc-schedule-time" slot="{{slot}}" rooms="[[_rooms]]" user-preferences="{{userPreferences}}"></tr>
-                </template>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+        <div class="visible-xs">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th colspan="3" class="text-center">
+                            <paper-icon-button icon="arrow-back" alt="arrow-back" title="arrow-back" class="pull-left" on-click="_xsRoomBack"></paper-icon-button>
+                            <span>[[xsRoom]]</span>
+                            <paper-icon-button icon="arrow-forward" alt="arrow-forward" title="arrow-forward" class="pull-right" on-click="_xsRoomForward"></paper-icon-button>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Session</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template is="dom-repeat" items="{{_slots}}" as="slot" sort="_sortSlots">
+                        <tr>
+                            <td>[[formatAsTime(slot.start)]]</td>
+                            <td>[[formatAsTime(slot.end)]]</td>
+                            <td is="ncdc-schedule-slot" room="[[xsRoom]]" sessions="[[slot.sessions]]" user-preferences="{{userPreferences}}"></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
     </template>
 
     <script>
@@ -48,9 +81,17 @@
                     day: {
                         type: String,
                         observer: '_onDayChange'
+                    },
+                    xsRoomSelection: {
+                        type: Number,
+                        value: 0
+                    },
+                    xsRoom: {
+                        type: String,
+                        computed: '_selectedRoom(_rooms, xsRoomSelection)'
                     }
                 },
-                behaviors: [NCDCPreferenceBehavior, NCDCDateBehavior],
+                behaviors: [NCDCPreferenceBehavior, NCDCDateBehavior, NCDCTimeBehavior],
 
                 _onDayChange: function(newValue, oldValue) {
                     this._day = this.parseDateString(newValue);
@@ -107,6 +148,15 @@
                 },
                 _date: function(ts) {
                     return moment(ts).format('dddd, MMMM Do YYYY');
+                },
+                _selectedRoom: function(rooms, index) {
+                    return (rooms && index >= 0 && index < rooms.length) ? rooms[index] : '';
+                },
+                _xsRoomBack: function(ev) {
+                    this.set('xsRoomSelection', (this._rooms.length + this.xsRoomSelection - 1) % this._rooms.length)
+                },
+                _xsRoomForward: function(ev) {
+                    this.set('xsRoomSelection', (this.xsRoomSelection + 1) % this._rooms.length)
                 }
             });
         })();
