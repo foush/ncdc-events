@@ -89,7 +89,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <iron-icon icon="icons:list"></iron-icon>
                 <span>My Schedule</span>
             </a>
-
         </paper-menu>
       </paper-scroll-header-panel>
 
@@ -134,6 +133,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </neon-animated-pages>
           </div>
         </ncdc-app>
+          <p id="createdBy">Built with <iron-icon icon="icons:polymer" on-click="goToPolymer"></iron-icon>Polymer by <a href="mailto:johnfoushee@gmail.com" on-click="favoriteJohn">John Foushee</a></p>
       </paper-scroll-header-panel>
     </paper-drawer-panel>
     <iron-ajax id="event_ajax" auto="true" url="/events.json" handle-as="json"></iron-ajax>

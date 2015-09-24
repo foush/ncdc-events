@@ -125,5 +125,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     document.getElementById('mainContainer').scrollTop = 0;
   };
 
+    app.goToPolymer = function() {
+        window.location.href='https://www.polymer-project.org/1.0/';
+    }
+
+    app.favoriteJohn = function() {
+        app.set('preferences.19', true);
+    }
+
 
 })(document);
