@@ -108,10 +108,10 @@
                     return (rooms && index >= 0 && index < rooms.length) ? rooms[index] : '';
                 },
                 _xsRoomBack: function(ev) {
-                    this.set('xsRoomSelection', (this.rooms.length + this.xsRoomSelection - 1) % this.rooms.length)
+                    this.set('xsRoomSelection', (this.rooms.length + this.xsRoomSelection - 1) % this.rooms.length);
                 },
                 _xsRoomForward: function(ev) {
-                    this.set('xsRoomSelection', (this.xsRoomSelection + 1) % this.rooms.length)
+                    this.set('xsRoomSelection', (this.xsRoomSelection + 1) % this.rooms.length);
                 }
             });
         })();
